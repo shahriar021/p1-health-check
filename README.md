@@ -174,3 +174,49 @@ Lesson: read the error message first. It usually names exactly what is wrong.
 - Check memory and top processes
 - Add an app-level `/health` endpoint, then containerize everything with Docker
 - Add a GitHub Actions workflow to lint the script on every push
+
+## Automation with cron
+
+cron runs a command on a schedule. This runs the health check every minute:
+
+    EDITOR=nano crontab -e
+
+Add this line (use your own full paths):
+
+    * * * * * /full/path/to/health.sh >> /full/path/to/health.log 2>&1
+
+- The five `*` mean: minute, hour, day of month, month, day of week
+- cron needs full paths because it does not know which folder I am in
+- `2>&1` sends error messages to the log too
+- `crontab -l` lists jobs. `crontab -r` removes ALL jobs without asking.
+- macOS: if I get "Operation not permitted", give Terminal Full Disk Access
+  (System Settings, Privacy & Security)
+
+## Processes
+
+A process is any running program. `ps` means process status.
+
+- `ps` shows only programs from this terminal
+- `ps aux` shows everything: a = all users, u = detailed columns,
+  x = also programs not started from a terminal
+- Columns: PID (the process number), %CPU, %MEM, COMMAND
+- `ps aux | sort -nrk 3 | head -5` shows the top 5 by CPU
+  (sort -k 3 = column 3, -n = numbers, -r = biggest first)
+- Use column 4 instead of 3 to sort by memory
+- `sleep 300 &` starts a background process, `kill PID` stops it
+- `kill -9 PID` is the forceful version, for when kill is ignored
+
+## Reading logs
+
+- `tail -n 7 file` shows the last 7 lines and stops
+- `tail -f file` follows the file and prints new lines as they arrive
+- `grep "text" file` shows matching lines
+- `grep -n "text" file` shows line numbers, `grep -c "text" file` counts matches
+- `wc -l file` counts the lines in a file
+
+## When I forget a command
+
+- Up arrow, or `Ctrl + R` then type part of it
+- `history | grep word`
+- `man command` for the manual (q to quit)
+- Look in this README
