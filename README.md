@@ -220,3 +220,49 @@ A process is any running program. `ps` means process status.
 - `history | grep word`
 - `man command` for the manual (q to quit)
 - Look in this README
+
+## Choosing which disk to check
+
+The script takes the disk path as an optional argument (default is /):
+
+    ./health.sh                       # checks /
+    ./health.sh /System/Volumes/Data  # macOS data disk
+    ./health.sh /app                  # a mounted folder inside Docker
+
+- `${1:-/}` means "first argument, or / if none was given"
+- If the disk cannot be read, the script prints ERROR and exits with code 1
+  instead of saying OK. A health check must never report OK when it is broken.
+- Exit code: 0 = success, anything else = failure. `echo $?` shows the last one.
+  CI pipelines and monitoring tools use this number to decide pass or fail.
+
+## Docker basics
+
+Docker packages an app and everything it needs into a container, so it runs
+the same on my Mac, a coworker's laptop, or a server.
+
+- Image = a read-only package (like a recipe or installer)
+- Container = a running copy made from an image
+- Docker Hub = the public store where images are pulled from
+- Pulling = downloading an image. Official images live under `library/`.
+
+Commands I used:
+
+- `docker run hello-world` pulls the image if missing, runs it, then it exits
+- `docker images` lists images on my machine
+- `docker ps` lists running containers, `docker ps -a` lists all
+- `docker run -it --rm ubuntu bash` opens a real Linux shell in a container
+  (-it = interactive terminal, --rm = delete the container when I exit)
+- `docker run -it --rm -v "$PWD":/app ubuntu bash` shares my current folder
+  with the container as /app (a volume)
+- `docker rm NAME` removes a container, `docker rmi IMAGE` removes an image.
+  Deleting a container deletes any data stored inside it.
+
+## What running the script on Linux taught me
+
+My first version only worked on macOS: it looked for a disk row ending in
+"Data", which does not exist on Linux. The empty result caused
+`integer expression expected`, and the script wrongly said "OK".
+Fixes: take the disk path as an argument, and fail loudly if the value is empty.
+
+Other differences I saw: Linux in the container used UTC time and the user
+root, and its uptime only counts since Docker started.
